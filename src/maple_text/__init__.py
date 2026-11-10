@@ -13,7 +13,7 @@ class Shout(Node):
     @classmethod
     def define_schema(cls) -> NodeSchema:
         return NodeSchema(
-            node_type="my-pack.shout",
+            node_type="maple-text.shout",
             display_name="Shout",
             category="text",
             description="Uppercase the text and repeat it.",

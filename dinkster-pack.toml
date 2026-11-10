@@ -1,12 +1,12 @@
 [pack]
 # Canonical lowercase distribution name; must match pyproject.toml exactly.
-name = "my-pack"
+name = "maple-text"
 # Public PEP 440 release; must match the wheel metadata and submitted version.
 version = "0.1.0"
 # The lower bound is the first engine version providing the APIs imported here.
 engine = ">=0.0.2,<0.1"
 # Every node id must fall under a claimed namespace. Use your own pack name.
-namespaces = ["my-pack"]
+namespaces = ["maple-text"]
 # Runtime Python dependencies must match the wheel's Requires-Dist, pinned exactly.
 # The host supplies dinkster_api.v1; this example needs no extra dependencies.
 requires = []
@@ -18,7 +18,7 @@ api = "dinkster-api/v1"
 
 [pack.entry]
 # Entries belong to the one package obtained by replacing '-' and '.' with '_'.
-nodes = "my_pack:NODES"
+nodes = "maple_text:NODES"
 
 [pack.sandbox]
 # Requests are not grants. This node requires no privileged resources.
