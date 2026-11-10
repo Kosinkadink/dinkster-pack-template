@@ -10,7 +10,7 @@ Requires Python 3.12+, Git and [uv](https://docs.astral.sh/uv/).
 2. From the clone, choose your permanent pack name (replace `maple-text` below):
 
 ```sh
-python tools/rename.py maple-text
+uv run --no-project --python 3.12 tools/rename.py maple-text
 uv sync --python 3.12
 uv run ruff check .
 uv run ruff format --check .
@@ -44,7 +44,7 @@ For a local disposable registry, set the token privately in your shell's
 `DINKSTER_REGISTRY_TOKEN` environment variable, then run:
 
 ```sh
-python tools/publish.py dist/*.whl --registry http://127.0.0.1:8791
+uv run --no-sync python tools/publish.py dist/*.whl --registry http://127.0.0.1:8791
 ```
 
 The command reports the candidate id and state until it is accepted and its release is active.
