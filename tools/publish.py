@@ -78,7 +78,7 @@ def main() -> None:
                 raise SystemExit("Accepted candidate is not active")
             print(f"Active: {name} {version}")
             return
-        if state not in {"queued", "scanning"}:
+        if state not in {"queued", "scanning", "promoting"}:
             raise SystemExit(f"Candidate did not become active: {state}")
         time.sleep(3)
     raise SystemExit("Timed out; inspect the candidate before submitting again")
