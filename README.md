@@ -58,5 +58,7 @@ Actions builds and tests on every push and pull request; version tags submit tha
 through the documented single-pack HTTP endpoint and report its candidate state.
 The template repository itself and the unrenamed `my-pack` example cannot submit.
 
-See the [pack authoring reference](https://github.com/Kosinkadink/Dinkster/blob/main/docs/pack-authoring.md)
-for the public node API and manifest contract.
+See the [registry submission guide](https://github.com/Kosinkadink/Dinkster/blob/main/docs/registry-submission.md)
+for a complete disposable example, admission rules, candidate findings and withdrawal.
+The [pack authoring reference](https://github.com/Kosinkadink/Dinkster/blob/main/docs/pack-authoring.md)
+covers the public node API and manifest contract.
