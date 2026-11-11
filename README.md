@@ -35,8 +35,14 @@ Keep `uv.lock` committed; update the API pin and run all checks when adopting a 
 ## Publish
 
 1. Open [Dinkster publisher accounts](https://id.dinkster.org/registry) and sign in
-   with your Dinkster account. You can use GitHub when it is offered there; the
-   registry itself does not have a separate sign-in.
+   with your Dinkster account. New authors choose **Create a Dinkster account**,
+   enter a handle, email and password, and check their email. Under **Verify your
+   email or resend verification**, enter the emailed token and click **Verify
+   email**, then sign in with the handle and password. **Resend verification
+   email** replaces the previous token; only the newest email works. If no email
+   arrives, contact support rather than making another account. Social sign-in
+   such as GitHub is optional when offered. The registry itself has no separate
+   sign-in, and no social-provider account is required.
 2. Choose your personal account or an organization you own or administer, then
    click **Claim publisher**. The publisher name is your Dinkster handle or
    organization slug, bound to its immutable account id. It does not prove
