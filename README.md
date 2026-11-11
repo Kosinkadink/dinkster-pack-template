@@ -34,7 +34,25 @@ Keep `uv.lock` committed; update the API pin and run all checks when adopting a 
 
 ## Publish
 
-Register your publisher and obtain a token from your registry operator.
+1. Open [Dinkster publisher accounts](https://id.dinkster.org/registry) and sign in
+   with your Dinkster account. You can use GitHub when it is offered there; the
+   registry itself does not have a separate sign-in.
+2. Choose your personal account or an organization you own or administer, then
+   click **Claim publisher**. The publisher name is your Dinkster handle or
+   organization slug, bound to its immutable account id. It does not prove
+   ownership of a matching GitHub name. Existing registry names and `dinkster`
+   are reserved; claiming a name does not grant official status.
+3. Enter your renamed pack name to limit the token to that pack (or leave it
+   blank for all packs owned by the publisher). Choose an expiry in the future,
+   at most 90 days away, then click **Create token**.
+4. Save the token immediately in your secret manager. It is shown once only;
+   refreshing the page or token list cannot recover it. **Revoke token** on the
+   same page refuses subsequent registry requests. Create a replacement before
+   expiry and update your workflow secret; do not reuse a revoked token.
+
+No server access or operator command is needed for these steps. On a disposable
+or self-hosted registry, use its identity service's `/registry` page instead.
+
 On your repository, add the Actions secret `DINKSTER_REGISTRY_TOKEN` and variable
 `DINKSTER_REGISTRY_URL` (the registry origin, for example your disposable registry's
 `http://127.0.0.1:8791`; hosted Actions needs an HTTPS registry it can reach).
