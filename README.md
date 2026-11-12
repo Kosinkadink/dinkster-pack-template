@@ -22,19 +22,26 @@ uv run --no-sync dinkster-doctor .
 ```
 
 The tests pass and doctor reports `healthy: 0 error(s), 0 warning(s)`.
-Stop and fix any failure before submitting. Tests call `execute` on plain values;
-doctor independently checks registration, schemas and the pack boundary.
-The development environment pins the published `dinkster-api==0.0.2`; no engine checkout is needed.
+Stop and fix any failure before submitting. Tests call `execute` on plain values
+and run a two-node graph through `from dinkster_engine.testing import load_pack`.
+The helper uses a real worker process by default; the graph test checks output
+values, executed nodes and cached results on a second run. It loads the manifest
+beside the imported pack, so CI tests the built wheel rather than editable source.
+Doctor independently checks registration, schemas and the pack boundary.
+The development environment pins published `dinkster-api==0.0.3` and
+`dinkster-engine==0.0.3`; no engine checkout or torch is needed.
 
 Edit `src/<your_package>/__init__.py` to add nodes, register them in `NODES`, and add tests.
-Node ids belong to your manifest's namespace. Import Dinkster through `dinkster_api.v1` only,
-never another node pack. The host supplies that API; extra runtime requirements go in both
+Node ids belong to your manifest's namespace. Runtime code imports Dinkster through
+`dinkster_api.v1` only, never another node pack. Tests may also import `load_pack`
+from `dinkster_engine.testing`; other engine imports remain private.
+The host supplies the API; extra runtime requirements go in both
 `pyproject.toml` dependencies and manifest `requires`, pinned to the same versions.
 Keep `uv.lock` committed; update the API pin and run all checks when adopting a new contract.
 
 ## Optional locked install check
 
-The ordinary tests stay lean and do not acquire an engine or torch. To also check
+The ordinary tests stay lean and do not acquire a managed engine runtime or torch. To also check
 the built wheel against a published runtime and its verified base, run:
 
 ```sh

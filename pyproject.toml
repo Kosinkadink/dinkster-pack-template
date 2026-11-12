@@ -18,7 +18,8 @@ packages = ["src/my_pack"]
 
 [dependency-groups]
 dev = [
-    "dinkster-api==0.0.2",
+    "dinkster-api==0.0.3",
+    "dinkster-engine==0.0.3",
     "pytest>=8,<10",
     "ruff>=0.8,<1",
     "pyright>=1.1.390,<2",
