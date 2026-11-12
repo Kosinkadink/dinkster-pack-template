@@ -1,0 +1,96 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#   "dinkster-api @ git+https://github.com/Kosinkadink/Dinkster.git@9ada7f6240fda0e5a8748e5bcbbe0ccdc369d54f#subdirectory=packages/dinkster-api",
+#   "dinkster-supervisor @ git+https://github.com/Kosinkadink/Dinkster.git@9ada7f6240fda0e5a8748e5bcbbe0ccdc369d54f#subdirectory=packages/dinkster-supervisor",
+# ]
+# ///
+"""Check a built wheel in a disposable, locked published runtime environment."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import tempfile
+import tomllib
+from pathlib import Path
+
+from dinkster_registry.archive_admission import extracted_archive, run_locked_probe
+from dinkster_supervisor.environment_artifacts import acquire, discover
+from dinkster_supervisor.environment_generations import prepare_engine_interpreter
+from dinkster_supervisor.environment_state import writer_lock
+from dinkster_workers.manifest import load_manifest
+from dinkster_workers.pack_lock import resolve_pack_lock
+from packaging.specifiers import SpecifierSet
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("wheel", type=Path)
+    parser.add_argument("--channel", choices=("stable", "main"), default="main")
+    parser.add_argument("--variant", default="linux-cpu")
+    parser.add_argument("--mirror", default="https://releases.dinkster.org")
+    parser.add_argument(
+        "--store", type=Path, default=Path.home() / ".cache/dinkster/pack-install-check"
+    )
+    args = parser.parse_args()
+    wheel = args.wheel.resolve()
+    payload = wheel.read_bytes()
+    store = args.store.resolve()
+    store.mkdir(parents=True, exist_ok=True)
+    with extracted_archive(payload) as root, writer_lock(store):
+        manifest = load_manifest(root / "dinkster-pack.toml")
+        publication = tomllib.loads((root / "dinkster-pack.toml").read_text())["pack"]
+        catalog = discover((args.mirror,), args.channel)
+        base = catalog.channel.base_for(args.variant)
+        print(json.dumps({"engine": catalog.channel.engine_release, "base": base}), flush=True)
+        if not SpecifierSet(publication["engine"]).contains(
+            catalog.channel.engine_version, prereleases=True
+        ):
+            raise ValueError("The chosen engine does not satisfy the pack's engine range.")
+        constraints = acquire(catalog, args.variant, store)
+        with tempfile.TemporaryDirectory(prefix=".install-check-", dir=store) as temporary:
+            scratch = Path(temporary)
+            python = prepare_engine_interpreter(
+                scratch / "engine", store=store, base=base, constraints=constraints
+            )
+            lock = resolve_pack_lock(
+                pack=manifest.name,
+                variant=args.variant,
+                requirements=(
+                    *manifest.requires_for("cpu"),
+                    f"{manifest.name} @ {wheel.as_uri()}",
+                ),
+                python=python,
+                constraints=constraints,
+                requires_python=">=3.12",
+                engine=publication["engine"],
+            )
+            result = run_locked_probe(
+                root,
+                lock,
+                generation_python=python,
+                packs=scratch / "packs",
+                wheel_store=store / "wheels",
+                uv_cache=store / "uv-cache",
+                variant=args.variant,
+            )
+            print(
+                json.dumps(
+                    {
+                        "engine": catalog.channel.engine_release,
+                        "base": base,
+                        "pack": manifest.name,
+                        "findings": [
+                            {"code": finding.code, "message": finding.message}
+                            for finding in result.findings
+                        ],
+                    }
+                )
+            )
+            return 1 if result.blocked else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

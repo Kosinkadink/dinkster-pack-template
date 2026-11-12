@@ -17,8 +17,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --locked
-      - run: uv run --no-sync ruff check .
-      - run: uv run --no-sync ruff format --check .
+      - run: uv run --no-sync ruff check . tools/check-install
+      - run: uv run --no-sync ruff format --check . tools/check-install
       - run: uv run --no-sync pyright
       - run: uv build --wheel
       - name: Test the built wheel, not the editable source
@@ -33,6 +33,28 @@ jobs:
           name: wheel
           path: dist/*.whl
           if-no-files-found: error
+
+  locked-install:
+    if: vars.DINKSTER_LOCKED_INSTALL_CHECK == 'true'
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CUDA_VISIBLE_DEVICES: ""
+      DINKSTER_ACCELERATOR: cpu
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel
+          path: dist
+      - name: Check locked installation against the chosen published runtime
+        env:
+          CHANNEL: ${{ vars.DINKSTER_INSTALL_CHANNEL || 'main' }}
+        run: uv run --script tools/check-install dist/*.whl --channel "$CHANNEL"
 
   publish:
     needs: checks

@@ -32,6 +32,31 @@ never another node pack. The host supplies that API; extra runtime requirements 
 `pyproject.toml` dependencies and manifest `requires`, pinned to the same versions.
 Keep `uv.lock` committed; update the API pin and run all checks when adopting a new contract.
 
+## Optional locked install check
+
+The ordinary tests stay lean and do not acquire an engine or torch. To also check
+the built wheel against a published runtime and its verified base, run:
+
+```sh
+uv build --wheel
+uv run --script tools/check-install dist/*.whl --channel main
+```
+
+The script pins its provisioning tools separately from the development environment.
+It verifies the chosen channel's engine/base artifacts, prepares a disposable engine,
+locks the pack's dependencies against its constraints, and runs the normal jailed
+admission probe using locked provisioning. A missing or incompatible input fails the
+check; it never falls back to an index-based install. The result names the exact
+engine and base. Verified downloads are cached in `~/.cache/dinkster/pack-install-check/`; temporary
+interpreters and pack environments are removed on success or failure.
+
+For the separate optional CI job, set repository variable
+`DINKSTER_LOCKED_INSTALL_CHECK` to `true`. `DINKSTER_INSTALL_CHANNEL` selects `main`
+(default) or `stable`. The job consumes the wheel from the ordinary checks and does
+not publish it. Local `--mirror` accepts the same trusted mirrors as the runtime
+installer, and `--store` chooses the download cache. This Linux CPU check requires
+the normal probe jail; unavailable isolation fails rather than running unjailed.
+
 ## Publish
 
 1. Open [Dinkster publisher accounts](https://id.dinkster.org/registry) and sign in
